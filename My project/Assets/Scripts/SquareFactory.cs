@@ -14,7 +14,6 @@ public class SquareFactory : MonoBehaviour
 #region Parameters
     [SerializeField] private Square squarePrefab;
     [SerializeField] private float spawnPeriod = 1f;
-    [SerializeField] private int poolSize = 10;
 #endregion 
 
 #region Components
@@ -22,8 +21,7 @@ public class SquareFactory : MonoBehaviour
 
 #region State
     private float spawnTimer;
-    private List<Square> available;
-    private List<Square> inUse;
+    private int squareCounter = 0;
 #endregion
 
 #region Properties
@@ -36,23 +34,6 @@ public class SquareFactory : MonoBehaviour
     void Awake()
     {
         spawnTimer = spawnPeriod;
-
-        available = new List<Square>();
-
-        for (int i = 0; i < poolSize; i++)
-        {
-            Square s = CreateSquare();
-            s.gameObject.SetActive(false);
-            available.Add(s);
-        }
-    }
-
-    private Square CreateSquare()
-    {
-        Square square = Instantiate(squarePrefab);
-        square.transform.parent = transform;
-
-        return square;
     }
 #endregion 
 
@@ -63,23 +44,31 @@ public class SquareFactory : MonoBehaviour
 
         if (spawnTimer <= 0)
         {   
-            if (available.Count > 0)
-            {
-                GetSquareFromPool();
-            }
+            CreateSquare();
             spawnTimer += spawnPeriod;
         }
     }
 
-    private Square GetSquareFromPool()
+    private Square CreateSquare()
     {
-        Square s = available[0];
-        s.gameObject.SetActive(true);
-        available.RemoveAt(0);          
-        s.transform.localPosition = Vector2.zero;      
-        return s;
+        Square square = Instantiate(squarePrefab);
+        square.gameObject.name = $"Square {squareCounter}";
+        squareCounter++;
+
+        square.transform.parent = transform;
+        square.transform.localPosition = Vector2.zero;
+
+        square.OnDie += OnSquareDie;
+
+        return square;
     }
 
+    private void OnSquareDie(Square square)
+    {
+        // unsub from this event
+        square.OnDie -= OnSquareDie;
+        Destroy(square.gameObject);
+    }
 #endregion 
 
 }
