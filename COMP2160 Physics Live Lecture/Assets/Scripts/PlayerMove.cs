@@ -93,7 +93,8 @@ public class PlayerMove : MonoBehaviour
     private void MoveHorizontally()
     {
         Vector2 velocity = rigidbody.linearVelocity;
-        velocity.x = maxSpeed * move.x;
+        float targetSpeed = maxSpeed * move.x;
+        velocity.x = targetSpeed;
         rigidbody.linearVelocity = velocity;        
     }
 #endregion
