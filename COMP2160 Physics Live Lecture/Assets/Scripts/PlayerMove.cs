@@ -6,6 +6,7 @@
  */
 
 using UnityEngine;
+using UnityEditor;
 using Sirenix.OdinInspector;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -100,11 +101,13 @@ public class PlayerMove : MonoBehaviour
 #region Gizmos
     void OnDrawGizmos()
     {
-        if (!Application.isPlaying)
+        if (rigidbody == null)
         {
-            // Don't run in the editor
             return;
         }
+
+        Handles.color = Color.white;
+        Handles.Label(transform.position, $"v = {rigidbody.linearVelocity}");
     }
 #endregion
 }
