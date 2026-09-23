@@ -49,8 +49,6 @@ public class PlayerMove : MonoBehaviour
 #region FixedUpdate
     void FixedUpdate()
     {
-        Debug.Log($"[PlayerMove.FixedUpdate] rigidbody.linearVelocity.y = {rigidbody.linearVelocity.y}");
-
         if (rigidbody.linearVelocity.y <= maxFallSpeed)
         {
             rigidbody.gravityScale = 0;
@@ -58,6 +56,10 @@ public class PlayerMove : MonoBehaviour
             Vector2 velocity = rigidbody.linearVelocity;
             velocity.y = maxFallSpeed;
             rigidbody.linearVelocity = velocity;
+        }
+        else
+        {
+            rigidbody.gravityScale = 1;            
         }
     }
 #endregion
