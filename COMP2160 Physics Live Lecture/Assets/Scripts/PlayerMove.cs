@@ -15,6 +15,7 @@ public class PlayerMove : MonoBehaviour
 
 #region Parameters
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxFallSpeed = -10;
+    [SerializeField, Unit(Units.MetersPerSecond)] private float maxSpeed = 5;
 #endregion 
 
 #region Connected Objects
@@ -25,6 +26,8 @@ public class PlayerMove : MonoBehaviour
 #endregion
 
 #region State
+    private Actions actions;
+    private Vector2 move;
 #endregion
 
 #region Properties
@@ -37,17 +40,38 @@ public class PlayerMove : MonoBehaviour
     void Awake()
     {
         rigidbody = GetComponent<Rigidbody2D>();
+        actions = new Actions();
+    }
+
+    void OnEnable()
+    {
+        actions.PlayerMove.Enable();
+        rigidbody.gravityScale = 1;
+    }
+
+    void OnDisable()
+    {
+        actions.PlayerMove.Disable();        
+        rigidbody.gravityScale = 0;
     }
 #endregion 
 
 #region Update
     void Update()
     {
+        // read input in the Update frame
+        move = actions.PlayerMove.Move.ReadValue<Vector2>();
     }
 #endregion
 
 #region FixedUpdate
     void FixedUpdate()
+    {
+        ControlGravity();
+        MoveHorizontally();
+    }
+
+    private void ControlGravity()
     {
         if (rigidbody.linearVelocity.y <= maxFallSpeed)
         {
@@ -59,8 +83,15 @@ public class PlayerMove : MonoBehaviour
         }
         else
         {
-            rigidbody.gravityScale = 1;            
+            rigidbody.gravityScale = 1;
         }
+    }
+
+    private void MoveHorizontally()
+    {
+        Vector2 velocity = rigidbody.linearVelocity;
+        velocity.x = maxSpeed * move.x;
+        rigidbody.linearVelocity = velocity;        
     }
 #endregion
 
