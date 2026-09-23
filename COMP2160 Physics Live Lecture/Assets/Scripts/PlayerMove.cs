@@ -40,6 +40,9 @@ public class PlayerMove : MonoBehaviour
     void Awake()
     {
         rigidbody = GetComponent<Rigidbody2D>();
+        rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
+        rigidbody.interpolation = RigidbodyInterpolation2D.Interpolate;
+
         actions = new Actions();
     }
 
@@ -104,7 +107,7 @@ public class PlayerMove : MonoBehaviour
         }
 
         Handles.color = Color.white;
-        Handles.Label(transform.position, $"v = {rigidbody.linearVelocity.y}");
+        Handles.Label(transform.position, $"v = {rigidbody.linearVelocity}");
 
     }
 #endregion
