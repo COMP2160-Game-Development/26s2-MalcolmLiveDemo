@@ -22,6 +22,7 @@ public class PlayerMove : MonoBehaviour
     [SerializeField, Unit(Units.MetersPerSecond)] private float jumpHeight = 1.5f;
     [SerializeField, Unit(Units.Second)] private float jumpBufferTime = 0.1f;
     [SerializeField, Unit(Units.Degree)] private float groundAngle = 10;
+    [SerializeField, Unit(Units.Second)] private float hoverPeriod = 1;
 #endregion 
 
 #region Connected Objects
@@ -37,6 +38,14 @@ public class PlayerMove : MonoBehaviour
     private List<ContactPoint2D> contacts;
     private float lastJumpTime = float.NegativeInfinity;
     private Vector2? lastJumpPos = null;    
+
+    private enum State { OnGround, Rising, Hovering, FallingGravity, FallingNoGravity };
+    private State jumpState = State.FallingGravity;
+    private float hoverTimer;
+
+    private int historyLength = 500; // = 10s * 50fps
+    private List<Vector2> positionHistory;
+    private List<State> jumpStateHistory;
 #endregion
 
 #region Properties
@@ -69,6 +78,8 @@ public class PlayerMove : MonoBehaviour
 
         actions = new Actions();
         contacts = new List<ContactPoint2D>();
+        positionHistory = new List<Vector2>();
+        jumpStateHistory = new List<State>();
     }
 
     void OnEnable()
@@ -76,7 +87,7 @@ public class PlayerMove : MonoBehaviour
         actions.PlayerMove.Enable();
         rigidbody.gravityScale = 1;
 
-        actions.PlayerMove.Jump.performed += OnJump;
+        actions.PlayerMove.Jump.performed += OnJumpPressed;
     }
 
     void OnDisable()
@@ -84,7 +95,7 @@ public class PlayerMove : MonoBehaviour
         actions.PlayerMove.Disable();        
         rigidbody.gravityScale = 0;
 
-        actions.PlayerMove.Jump.performed -= OnJump;
+        actions.PlayerMove.Jump.performed -= OnJumpPressed;
     }
 #endregion 
 
@@ -95,7 +106,7 @@ public class PlayerMove : MonoBehaviour
         move = actions.PlayerMove.Move.ReadValue<Vector2>();
     }
 
-    void OnJump(InputAction.CallbackContext ctx)
+    void OnJumpPressed(InputAction.CallbackContext ctx)
     {
         lastJumpTime = Time.time;
         lastJumpPos = rigidbody.position;
@@ -105,27 +116,19 @@ public class PlayerMove : MonoBehaviour
 #region FixedUpdate
     void FixedUpdate()
     {
-        ControlGravity();
         MoveHorizontally();
         Jump();
 
+        positionHistory.Add(rigidbody.position);
+        jumpStateHistory.Add(jumpState);
+
+        while (positionHistory.Count > historyLength)
+        {
+            positionHistory.RemoveAt(0);
+            jumpStateHistory.RemoveAt(0);
+        }
+
         contacts.Clear();
-    }
-
-    private void ControlGravity()
-    {
-        if (rigidbody.linearVelocity.y <= maxFallSpeed)
-        {
-            rigidbody.gravityScale = 0;
-
-            Vector2 velocity = rigidbody.linearVelocity;
-            velocity.y = maxFallSpeed;
-            rigidbody.linearVelocity = velocity;
-        }
-        else
-        {
-            rigidbody.gravityScale = 1;
-        }
     }
 
     private void MoveHorizontally()
@@ -138,15 +141,80 @@ public class PlayerMove : MonoBehaviour
 
     private void Jump()
     {
-        if (IsOnGround() && Time.time <= lastJumpTime + jumpBufferTime)
+        switch (jumpState)
         {
-            // use up the jump
-            lastJumpTime = float.NegativeInfinity;
+            case State.OnGround:
+                if (IsOnGround())
+                {
+                    if (Time.time <= lastJumpTime + jumpBufferTime)
+                    {
+                        jumpState = State.Rising;
 
-            // In 3D we would use ForceMode.VelocityChange but this isn't
-            // available in the 2D engine
-            rigidbody.AddForce(JumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);            
+                        // use up the jump
+                        lastJumpTime = float.NegativeInfinity;
+
+                        // In 3D we would use ForceMode.VelocityChange but this isn't
+                        // available in the 2D engine
+                        rigidbody.AddForce(JumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);
+                    }
+                }
+                else
+                {
+                    jumpState = State.FallingGravity;
+                }
+                break;
+
+            case State.Rising:
+                if (rigidbody.linearVelocityY < 0)
+                {
+                    jumpState = State.Hovering;
+                    hoverTimer = hoverPeriod;
+                    rigidbody.linearVelocityY = 0;
+                    rigidbody.gravityScale = 0;
+                }
+                break;
+
+            case State.Hovering:
+                hoverTimer -= Time.fixedDeltaTime;
+
+                if (hoverTimer <= 0)
+                {
+                    jumpState = State.FallingGravity;
+                    rigidbody.gravityScale = 1;
+                }
+                break;
+
+            case State.FallingGravity:
+                if (IsOnGround())
+                {
+                    jumpState = State.OnGround;
+                }
+                else if (rigidbody.linearVelocity.y <= maxFallSpeed)
+                {
+                    jumpState = State.FallingNoGravity;
+                    rigidbody.gravityScale = 0;
+
+                    Vector2 velocity = rigidbody.linearVelocity;
+                    velocity.y = maxFallSpeed;
+                    rigidbody.linearVelocity = velocity;
+                }
+                break;
+
+            case State.FallingNoGravity:
+                if (IsOnGround())
+                {
+                    jumpState = State.OnGround;
+                    rigidbody.gravityScale = 1;
+                }
+                else
+                {
+                    Vector2 velocity = rigidbody.linearVelocity;
+                    velocity.y = maxFallSpeed;
+                    rigidbody.linearVelocity = velocity;
+                }
+                break;
         }
+
     }
 
     private bool IsOnGround()
@@ -195,6 +263,30 @@ public class PlayerMove : MonoBehaviour
         {
             Gizmos.color = Color.black;
             Gizmos.DrawSphere(lastJumpPos.Value, 0.1f);
+        }
+
+        for (int i = 1; i < positionHistory.Count; i++)
+        {
+            switch (jumpStateHistory[i])
+            {
+                case State.OnGround:
+                    Gizmos.color = Color.red;
+                    break;
+                case State.Rising:
+                    Gizmos.color = Color.orange;
+                    break;
+                case State.Hovering:
+                    Gizmos.color = Color.yellow;
+                    break;
+                case State.FallingGravity:
+                    Gizmos.color = Color.green;
+                    break;
+                case State.FallingNoGravity:
+                    Gizmos.color = Color.blue;
+                    break;
+            }
+
+            Gizmos.DrawLine(positionHistory[i-1], positionHistory[i]);
         }
     }
 #endregion

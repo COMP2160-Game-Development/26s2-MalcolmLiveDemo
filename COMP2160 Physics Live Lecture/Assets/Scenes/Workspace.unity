@@ -1004,6 +1004,10 @@ PrefabInstance:
       propertyPath: jumpHeight
       value: 1.5
       objectReference: {fileID: 0}
+    - target: {fileID: 6774269444429996038, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
+      propertyPath: hoverPeriod
+      value: 0.1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
