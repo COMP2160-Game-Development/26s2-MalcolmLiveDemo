@@ -8,6 +8,8 @@
 using UnityEngine;
 using UnityEditor;
 using Sirenix.OdinInspector;
+using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMove : MonoBehaviour
@@ -16,6 +18,9 @@ public class PlayerMove : MonoBehaviour
 #region Parameters
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxFallSpeed = -10;
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxSpeed = 5;
+    [SerializeField, Unit(Units.MetersPerSecond)] private float jumpSpeed = 5;
+    [SerializeField, Unit(Units.Degree)] private float groundAngle = 10;
+
 #endregion 
 
 #region Connected Objects
@@ -28,6 +33,8 @@ public class PlayerMove : MonoBehaviour
 #region State
     private Actions actions;
     private Vector2 move;
+    private bool jumpPressed = false;
+    private List<ContactPoint2D> contacts;s
 #endregion
 
 #region Properties
@@ -42,6 +49,7 @@ public class PlayerMove : MonoBehaviour
         rigidbody = GetComponent<Rigidbody2D>();
         rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
         rigidbody.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rigidbody.mass = 1;
 
         actions = new Actions();
     }
@@ -50,6 +58,8 @@ public class PlayerMove : MonoBehaviour
     {
         actions.PlayerMove.Enable();
         rigidbody.gravityScale = 1;
+
+        actions.PlayerMove.Jump.performed += OnJump;
     }
 
     void OnDisable()
@@ -65,6 +75,11 @@ public class PlayerMove : MonoBehaviour
         // read input in the Update frame
         move = actions.PlayerMove.Move.ReadValue<Vector2>();
     }
+
+    void OnJump(InputAction.CallbackContext ctx)
+    {
+        jumpPressed = true;
+    }
 #endregion
 
 #region FixedUpdate
@@ -72,6 +87,9 @@ public class PlayerMove : MonoBehaviour
     {
         ControlGravity();
         MoveHorizontally();
+        Jump();
+
+        contacts.Clear();
     }
 
     private void ControlGravity()
@@ -96,6 +114,39 @@ public class PlayerMove : MonoBehaviour
         float targetSpeed = maxSpeed * move.x;
         velocity.x = targetSpeed;
         rigidbody.linearVelocity = velocity;        
+    }
+
+    private void Jump()
+    {
+        if (jumpPressed)
+        {
+            jumpPressed = false;
+
+            rigidbody.AddForce(jumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);
+        }
+    }
+
+    private bool IsOnGround()
+    {
+        foreach (ContactPoint2D cp in contacts)
+        {
+            if (cp.normal.x < Mathf.Sin(groundAngle))
+            {
+                
+            }
+        }
+
+        return false;
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        contacts.AddRange(collision.contacts);
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        contacts.AddRange(collision.contacts);
     }
 #endregion
 
