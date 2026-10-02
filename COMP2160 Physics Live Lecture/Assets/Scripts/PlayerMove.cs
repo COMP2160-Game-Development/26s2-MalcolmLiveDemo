@@ -19,7 +19,7 @@ public class PlayerMove : MonoBehaviour
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxFallSpeed = -10;
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxSpeed = 5;
     [Header("Jumping")]   
-    [SerializeField, Unit(Units.MetersPerSecond)] private float jumpSpeed = 5;
+    [SerializeField, Unit(Units.MetersPerSecond)] private float jumpHeight = 1.5f;
     [SerializeField, Unit(Units.Second)] private float jumpBufferTime = 0.1f;
     [SerializeField, Unit(Units.Degree)] private float groundAngle = 10;
 #endregion 
@@ -28,7 +28,7 @@ public class PlayerMove : MonoBehaviour
 #endregion
 
 #region Components
-    private Rigidbody2D rigidbody;
+    new private Rigidbody2D rigidbody;
 #endregion
 
 #region State
@@ -36,10 +36,23 @@ public class PlayerMove : MonoBehaviour
     private Vector2 move;
     private List<ContactPoint2D> contacts;
     private float lastJumpTime = float.NegativeInfinity;
-    private Vector2? lastJumpPos = null;
+    private Vector2? lastJumpPos = null;    
 #endregion
 
 #region Properties
+    private float JumpSpeed
+    {
+        get
+        {
+            // v^2 = u^2 + 2gh
+            // Let v = 0
+            // u^2 = -2gh
+            // u = sqrt(-2gh) 
+
+            return Mathf.Sqrt(-2 * Physics2D.gravity.y * jumpHeight);
+        }
+    }
+
 #endregion
 
 #region Events
@@ -132,7 +145,7 @@ public class PlayerMove : MonoBehaviour
 
             // In 3D we would use ForceMode.VelocityChange but this isn't
             // available in the 2D engine
-            rigidbody.AddForce(jumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);            
+            rigidbody.AddForce(JumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);            
         }
     }
 
