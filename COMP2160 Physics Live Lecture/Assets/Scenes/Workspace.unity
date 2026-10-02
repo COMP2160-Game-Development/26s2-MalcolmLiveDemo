@@ -163,7 +163,7 @@ CompositeCollider2D:
   m_GenerationType: 0
   m_EdgeRadius: 0
   m_ColliderPaths:
-  - m_Collider: {fileID: 1111110270}
+  - m_Collider: {fileID: 1391233248048897982}
     m_ColliderPaths:
     - - X: 80000000
         Y: 50000000
@@ -222,11 +222,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!19719996 &1111110270 stripped
-TilemapCollider2D:
-  m_CorrespondingSourceObject: {fileID: 4810865444236484026, guid: 0f2dc340221b14ecab36a1cc7b82d6b5, type: 3}
-  m_PrefabInstance: {fileID: 1391233248048897981}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1391233248048897981
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -302,63 +297,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 698838278}
   m_SourcePrefab: {fileID: 100100000, guid: 0f2dc340221b14ecab36a1cc7b82d6b5, type: 3}
---- !u!1001 &3184341992133763262
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.38
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 3.31
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1738632728700417323, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2081112514363706548, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
-      propertyPath: m_Name
-      value: Player
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 2fa7d681027f14786bb8f1eb47279886, type: 3}
+--- !u!19719996 &1391233248048897982 stripped
+TilemapCollider2D:
+  m_CorrespondingSourceObject: {fileID: 6986249620869397525, guid: 0f2dc340221b14ecab36a1cc7b82d6b5, type: 3}
+  m_PrefabInstance: {fileID: 1391233248048897981}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6007094621004129230
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -545,4 +488,4 @@ SceneRoots:
   - {fileID: 6804945505380129546}
   - {fileID: 6007094621004129230}
   - {fileID: 1391233248048897981}
-  - {fileID: 3184341992133763262}
+  - {fileID: 6699804272776065912}
