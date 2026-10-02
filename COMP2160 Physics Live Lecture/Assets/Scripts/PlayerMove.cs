@@ -14,10 +14,8 @@ public class PlayerMove : MonoBehaviour
 {
 
 #region Parameters
-    [Header("Vertical movement")]
-    [SerializeField, Unit(Units.MetersPerSecond)] private float maxFallSpeed = -20;
-    [Header("Horizontal movement")]
-    [SerializeField, Unit(Units.MetersPerSecond)] private float moveSpeed = 10;
+    [SerializeField, Unit(Units.MetersPerSecond)] private float maxFallSpeed = -10;
+    [SerializeField, Unit(Units.MetersPerSecond)] private float maxSpeed = 5;
 #endregion 
 
 #region Connected Objects
@@ -41,28 +39,30 @@ public class PlayerMove : MonoBehaviour
 #region Init & Destroy
     void Awake()
     {
-        actions = new Actions();
-
         rigidbody = GetComponent<Rigidbody2D>();
-        rigidbody.gravityScale = 0;
         rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
         rigidbody.interpolation = RigidbodyInterpolation2D.Interpolate;
+
+        actions = new Actions();
     }
 
     void OnEnable()
     {
-        actions.PlayerMove.Enable();   
+        actions.PlayerMove.Enable();
+        rigidbody.gravityScale = 1;
     }
 
     void OnDisable()
     {
-        actions.PlayerMove.Disable();           
+        actions.PlayerMove.Disable();        
+        rigidbody.gravityScale = 0;
     }
 #endregion 
 
 #region Update
     void Update()
     {
+        // read input in the Update frame
         move = actions.PlayerMove.Move.ReadValue<Vector2>();
     }
 #endregion
@@ -76,25 +76,26 @@ public class PlayerMove : MonoBehaviour
 
     private void ControlGravity()
     {
-        Vector2 velocity = rigidbody.linearVelocity;
-
-        if (velocity.y < maxFallSpeed)
+        if (rigidbody.linearVelocity.y <= maxFallSpeed)
         {
+            rigidbody.gravityScale = 0;
+
+            Vector2 velocity = rigidbody.linearVelocity;
             velocity.y = maxFallSpeed;
             rigidbody.linearVelocity = velocity;
-            rigidbody.gravityScale = 0;
         }
         else
         {
             rigidbody.gravityScale = 1;
-        }            
+        }
     }
 
     private void MoveHorizontally()
     {
         Vector2 velocity = rigidbody.linearVelocity;
-        velocity.x = move.x * moveSpeed;
-        rigidbody.linearVelocity = velocity;
+        float targetSpeed = maxSpeed * move.x;
+        velocity.x = targetSpeed;
+        rigidbody.linearVelocity = velocity;        
     }
 #endregion
 
@@ -108,6 +109,7 @@ public class PlayerMove : MonoBehaviour
 
         Handles.color = Color.white;
         Handles.Label(transform.position, $"v = {rigidbody.linearVelocity}");
+
     }
 #endregion
 }
