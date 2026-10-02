@@ -20,7 +20,6 @@ public class PlayerMove : MonoBehaviour
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxSpeed = 5;
     [SerializeField, Unit(Units.MetersPerSecond)] private float jumpSpeed = 5;
     [SerializeField, Unit(Units.Degree)] private float groundAngle = 10;
-
 #endregion 
 
 #region Connected Objects
@@ -34,7 +33,7 @@ public class PlayerMove : MonoBehaviour
     private Actions actions;
     private Vector2 move;
     private bool jumpPressed = false;
-    private List<ContactPoint2D> contacts;s
+    private List<ContactPoint2D> contacts;
 #endregion
 
 #region Properties
@@ -50,8 +49,10 @@ public class PlayerMove : MonoBehaviour
         rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
         rigidbody.interpolation = RigidbodyInterpolation2D.Interpolate;
         rigidbody.mass = 1;
+        rigidbody.sleepMode = RigidbodySleepMode2D.NeverSleep;
 
         actions = new Actions();
+        contacts = new List<ContactPoint2D>();
     }
 
     void OnEnable()
@@ -122,17 +123,24 @@ public class PlayerMove : MonoBehaviour
         {
             jumpPressed = false;
 
-            rigidbody.AddForce(jumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);
+            if (IsOnGround())
+            {
+                rigidbody.AddForce(jumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);            
+            }
         }
     }
 
     private bool IsOnGround()
     {
+        Debug.Log($"[PlayerMove.IsOnGround] # contacts = {contacts.Count}");
+
         foreach (ContactPoint2D cp in contacts)
         {
-            if (cp.normal.x < Mathf.Sin(groundAngle))
+            Debug.Log($"[PlayerMove.IsOnGround] n = {cp.normal} : {Mathf.Sin(groundAngle)}");
+
+            if (Mathf.Abs(cp.normal.x) <= Mathf.Sin(groundAngle * Mathf.Deg2Rad))
             {
-                
+                return true;
             }
         }
 
@@ -160,6 +168,13 @@ public class PlayerMove : MonoBehaviour
 
         Handles.color = Color.white;
         Handles.Label(transform.position, $"v = {rigidbody.linearVelocity}");
+
+        Gizmos.color = Color.red;
+        foreach (ContactPoint2D cp in contacts)
+        {
+            Gizmos.DrawSphere(cp.point, 0.1f);
+            Gizmos.DrawLine(cp.point, cp.point + cp.normal);
+        }
 
     }
 #endregion
