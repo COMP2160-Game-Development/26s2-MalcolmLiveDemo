@@ -18,7 +18,9 @@ public class PlayerMove : MonoBehaviour
 #region Parameters
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxFallSpeed = -10;
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxSpeed = 5;
+    [Header("Jumping")]   
     [SerializeField, Unit(Units.MetersPerSecond)] private float jumpSpeed = 5;
+    [SerializeField, Unit(Units.Second)] private float jumpBufferTime = 0.1f;
     [SerializeField, Unit(Units.Degree)] private float groundAngle = 10;
 #endregion 
 
@@ -32,8 +34,9 @@ public class PlayerMove : MonoBehaviour
 #region State
     private Actions actions;
     private Vector2 move;
-    private bool jumpPressed = false;
     private List<ContactPoint2D> contacts;
+    private float lastJumpTime = float.NegativeInfinity;
+    private Vector2? lastJumpPos = null;
 #endregion
 
 #region Properties
@@ -67,6 +70,8 @@ public class PlayerMove : MonoBehaviour
     {
         actions.PlayerMove.Disable();        
         rigidbody.gravityScale = 0;
+
+        actions.PlayerMove.Jump.performed -= OnJump;
     }
 #endregion 
 
@@ -79,7 +84,8 @@ public class PlayerMove : MonoBehaviour
 
     void OnJump(InputAction.CallbackContext ctx)
     {
-        jumpPressed = true;
+        lastJumpTime = Time.time;
+        lastJumpPos = rigidbody.position;
     }
 #endregion
 
@@ -119,25 +125,21 @@ public class PlayerMove : MonoBehaviour
 
     private void Jump()
     {
-        if (jumpPressed)
+        if (IsOnGround() && Time.time <= lastJumpTime + jumpBufferTime)
         {
-            jumpPressed = false;
+            // use up the jump
+            lastJumpTime = float.NegativeInfinity;
 
-            if (IsOnGround())
-            {
-                rigidbody.AddForce(jumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);            
-            }
+            // In 3D we would use ForceMode.VelocityChange but this isn't
+            // available in the 2D engine
+            rigidbody.AddForce(jumpSpeed * rigidbody.mass * Vector2.up, ForceMode2D.Impulse);            
         }
     }
 
     private bool IsOnGround()
     {
-        Debug.Log($"[PlayerMove.IsOnGround] # contacts = {contacts.Count}");
-
         foreach (ContactPoint2D cp in contacts)
         {
-            Debug.Log($"[PlayerMove.IsOnGround] n = {cp.normal} : {Mathf.Sin(groundAngle)}");
-
             if (Mathf.Abs(cp.normal.x) <= Mathf.Sin(groundAngle * Mathf.Deg2Rad))
             {
                 return true;
@@ -176,6 +178,11 @@ public class PlayerMove : MonoBehaviour
             Gizmos.DrawLine(cp.point, cp.point + cp.normal);
         }
 
+        if (lastJumpPos != null)
+        {
+            Gizmos.color = Color.black;
+            Gizmos.DrawSphere(lastJumpPos.Value, 0.1f);
+        }
     }
 #endregion
 }
