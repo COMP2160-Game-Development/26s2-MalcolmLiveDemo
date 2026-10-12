@@ -6,9 +6,10 @@
  */
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEditor;
 using Sirenix.OdinInspector;
-using UnityEngine.InputSystem;
+using System;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -18,6 +19,7 @@ public class PlayerMove : MonoBehaviour
 #region Parameters
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxFallSpeed = -10;
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxSpeed = 5;
+    [SerializeField, Unit(Units.MetersPerSecondSquared)] private float acceleration = 5;
     [Header("Jumping")]   
     [SerializeField, Unit(Units.MetersPerSecond)] private float jumpHeight = 1.5f;
     [SerializeField, Unit(Units.Second)] private float jumpBufferTime = 0.1f;
@@ -118,15 +120,7 @@ public class PlayerMove : MonoBehaviour
     {
         MoveHorizontally();
         Jump();
-
-        positionHistory.Add(rigidbody.position);
-        jumpStateHistory.Add(jumpState);
-
-        while (positionHistory.Count > historyLength)
-        {
-            positionHistory.RemoveAt(0);
-            jumpStateHistory.RemoveAt(0);
-        }
+        RecordHistory();
 
         contacts.Clear();
     }
@@ -135,7 +129,18 @@ public class PlayerMove : MonoBehaviour
     {
         Vector2 velocity = rigidbody.linearVelocity;
         float targetSpeed = maxSpeed * move.x;
-        velocity.x = targetSpeed;
+
+        float diff = targetSpeed - velocity.x;
+        float deltaV = Math.Sign(diff) * acceleration * Time.fixedDeltaTime;
+        if (Mathf.Abs(deltaV) > Mathf.Abs(diff))
+        {
+            velocity.x = targetSpeed;
+        }
+        else
+        {
+            velocity.x += deltaV;
+        }
+
         rigidbody.linearVelocity = velocity;        
     }
 
@@ -215,6 +220,18 @@ public class PlayerMove : MonoBehaviour
                 break;
         }
 
+    }
+
+    private void RecordHistory()
+    {
+        positionHistory.Add(rigidbody.position);
+        jumpStateHistory.Add(jumpState);
+
+        while (positionHistory.Count > historyLength)
+        {
+            positionHistory.RemoveAt(0);
+            jumpStateHistory.RemoveAt(0);
+        }        
     }
 
     private bool IsOnGround()
