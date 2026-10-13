@@ -129,15 +129,12 @@ public class PlayerMove : MonoBehaviour
 
     private void Jump()
     {
-        if (Time.time - jumpPressedTime <= jumpBufferTime)
+        if (IsOnGround() && Time.time - jumpPressedTime <= jumpBufferTime)
         {
             jumpPressedTime = float.NegativeInfinity;
 
-            if (IsOnGround())
-            {
-                float jumpSpeed = Mathf.Sqrt(-2 * jumpHeight * Physics2D.gravity.y);
-                rigidbody.linearVelocityY = jumpSpeed;                 
-            }
+            float jumpSpeed = Mathf.Sqrt(-2 * jumpHeight * Physics2D.gravity.y);
+            rigidbody.linearVelocityY = jumpSpeed;                 
         }
     }
 
