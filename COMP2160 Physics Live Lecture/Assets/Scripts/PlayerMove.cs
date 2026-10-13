@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEditor;
 using Sirenix.OdinInspector;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMove : MonoBehaviour
@@ -17,10 +18,13 @@ public class PlayerMove : MonoBehaviour
 #region Parameters
     [Header("Horizontal movement")]
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxSpeed = 5;
+    [SerializeField, Unit(Units.Degree)] private float maxGroundAngle = 5;
     
     [Header("Vertical movement")]
     [SerializeField, Unit(Units.MetersPerSecond)] private float maxFallSpeed = -10;
     [SerializeField, Unit(Units.Meter)] private float jumpHeight = 1.5f; 
+    [SerializeField, Unit(Units.Second)] private float jumpBufferTime = 0.1f; 
+    
 #endregion 
 
 #region Connected Objects
@@ -33,7 +37,9 @@ public class PlayerMove : MonoBehaviour
 #region State
     private Actions actions;
     private Vector2 move;
-    private bool jumpPressed = false;
+    private float jumpPressedTime = float.NegativeInfinity;
+
+    private List<ContactPoint2D> contacts = new List<ContactPoint2D>();
 #endregion
 
 #region Properties
@@ -48,6 +54,7 @@ public class PlayerMove : MonoBehaviour
         rigidbody = GetComponent<Rigidbody2D>();
         rigidbody.constraints = RigidbodyConstraints2D.FreezeRotation;
         rigidbody.interpolation = RigidbodyInterpolation2D.Interpolate;
+        rigidbody.sleepMode = RigidbodySleepMode2D.NeverSleep;
 
         actions = new Actions();
     }
@@ -78,7 +85,7 @@ public class PlayerMove : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext ctx)
     {
-        jumpPressed = true;
+        jumpPressedTime = Time.time;
     }
 #endregion
 
@@ -88,6 +95,8 @@ public class PlayerMove : MonoBehaviour
         ControlGravity();
         Jump();
         MoveHorizontally();
+
+        contacts.Clear();
     }
 
     private void ControlGravity()
@@ -106,14 +115,29 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
+    private bool IsOnGround()
+    {
+        foreach (ContactPoint2D cp in contacts)
+        {
+            if (IsGroundNormal(cp))
+            {   
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void Jump()
     {
-        if (jumpPressed)
+        if (Time.time - jumpPressedTime <= jumpBufferTime)
         {
-            jumpPressed = false;
+            jumpPressedTime = float.NegativeInfinity;
 
-            float jumpSpeed = Mathf.Sqrt(-2 * jumpHeight * Physics2D.gravity.y);
-            rigidbody.linearVelocityY = jumpSpeed; 
+            if (IsOnGround())
+            {
+                float jumpSpeed = Mathf.Sqrt(-2 * jumpHeight * Physics2D.gravity.y);
+                rigidbody.linearVelocityY = jumpSpeed;                 
+            }
         }
     }
 
@@ -124,7 +148,27 @@ public class PlayerMove : MonoBehaviour
         velocity.x = targetSpeed;
         rigidbody.linearVelocity = velocity;        
     }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        contacts.AddRange(collision.contacts);
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        contacts.AddRange(collision.contacts);
+    }
+
 #endregion
+
+#region Private Methods
+    private bool IsGroundNormal(ContactPoint2D cp)
+    {
+        return cp.normal.y > 0 && Mathf.Abs(cp.normal.x) <= Mathf.Sin(maxGroundAngle * Mathf.Deg2Rad);
+    }
+
+#endregion
+
 
 #region Gizmos
     void OnDrawGizmos()
@@ -137,6 +181,22 @@ public class PlayerMove : MonoBehaviour
         Handles.color = Color.white;
         Handles.Label(transform.position, $"v = {rigidbody.linearVelocity}");
 
+        Gizmos.color = Color.red;
+
+        foreach (ContactPoint2D cp in contacts)
+        {
+            Gizmos.DrawSphere(cp.point, 0.1f);            
+
+            if (IsGroundNormal(cp))
+            {   
+                Gizmos.color = Color.blue;                
+            }
+            else
+            {
+                Gizmos.color = Color.red;                                
+            }
+            Gizmos.DrawLine(cp.point, cp.point + cp.normal);            
+        }
     }
 #endregion
 }
