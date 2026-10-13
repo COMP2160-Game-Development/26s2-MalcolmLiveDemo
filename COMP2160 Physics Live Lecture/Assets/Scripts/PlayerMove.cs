@@ -182,16 +182,8 @@ public class PlayerMove : MonoBehaviour
 
         foreach (ContactPoint2D cp in contacts)
         {
+            Gizmos.color = IsGroundNormal(cp) ? Color.blue : Color.red;                                
             Gizmos.DrawSphere(cp.point, 0.1f);            
-
-            if (IsGroundNormal(cp))
-            {   
-                Gizmos.color = Color.blue;                
-            }
-            else
-            {
-                Gizmos.color = Color.red;                                
-            }
             Gizmos.DrawLine(cp.point, cp.point + cp.normal);            
         }
     }
