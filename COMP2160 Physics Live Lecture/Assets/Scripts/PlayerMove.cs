@@ -45,7 +45,7 @@ public class PlayerMove : MonoBehaviour
 
     private float jumpPressedTime = float.NegativeInfinity;
     private enum JumpState { OnGround, RisingWithGravity, Hovering, FallingWithGravity, FallingNoGravity };
-    private JumpState state = JumpState.FallingWithGravity;
+    private JumpState jumpState = JumpState.FallingWithGravity;
 
     private float hoverStartTime = float.NegativeInfinity;
 
@@ -53,6 +53,7 @@ public class PlayerMove : MonoBehaviour
 
     private List<float> timeHistory;
     private List<Vector3> positionHistory;
+    private List<JumpState> jumpHistory;
 #endregion
 
 #region Properties
@@ -73,6 +74,7 @@ public class PlayerMove : MonoBehaviour
 
         timeHistory = new List<float>();
         positionHistory = new List<Vector3>();
+        jumpHistory = new List<JumpState>();
 
         actions = new Actions();
     }
@@ -95,7 +97,7 @@ public class PlayerMove : MonoBehaviour
 
     void Start()
     {
-        state = JumpState.FallingWithGravity;
+        jumpState = JumpState.FallingWithGravity;
     }        
 
 #endregion 
@@ -108,11 +110,13 @@ public class PlayerMove : MonoBehaviour
 
         timeHistory.Add(Time.time);
         positionHistory.Add(transform.position);
+        jumpHistory.Add(jumpState);
 
         while (timeHistory[0] < Time.time - historyDuration)
         {
             timeHistory.RemoveAt(0);
             positionHistory.RemoveAt(0);
+            jumpHistory.RemoveAt(0);
         }
     }
 
@@ -146,14 +150,14 @@ public class PlayerMove : MonoBehaviour
 
     private void Jump()
     {
-        switch (state)
+        switch (jumpState)
         {
             case JumpState.OnGround:
                 if (IsOnGround())
                 {
                     if (Time.time - jumpPressedTime <= jumpBufferTime)
                     {
-                        state = JumpState.RisingWithGravity;
+                        jumpState = JumpState.RisingWithGravity;
 
                         jumpPressedTime = float.NegativeInfinity;
                         float jumpSpeed = Mathf.Sqrt(-2 * jumpHeight * Physics2D.gravity.y);
@@ -162,7 +166,7 @@ public class PlayerMove : MonoBehaviour
                 }
                 else
                 {
-                    state = JumpState.FallingWithGravity;
+                    jumpState = JumpState.FallingWithGravity;
                 }
 
                 break;
@@ -173,7 +177,7 @@ public class PlayerMove : MonoBehaviour
 
                 if (rigidbody.linearVelocity.y <= 0)
                 {
-                    state = JumpState.Hovering;
+                    jumpState = JumpState.Hovering;
                     rigidbody.linearVelocityY = 0;
                     rigidbody.gravityScale = 0;
 
@@ -189,7 +193,7 @@ public class PlayerMove : MonoBehaviour
 
                 if (Time.time - hoverStartTime > hoverDuration)
                 {
-                    state = JumpState.FallingWithGravity;
+                    jumpState = JumpState.FallingWithGravity;
                     rigidbody.gravityScale = 1;                 
                 }
 
@@ -200,12 +204,12 @@ public class PlayerMove : MonoBehaviour
 
                 if (IsOnGround())
                 {                    
-                    state = JumpState.OnGround;
+                    jumpState = JumpState.OnGround;
                     rigidbody.linearVelocityY = 0;
                 }
                 else  if (rigidbody.linearVelocity.y <= maxFallSpeed)
                 {
-                    state = JumpState.FallingNoGravity;
+                    jumpState = JumpState.FallingNoGravity;
                     rigidbody.gravityScale = 0;
                     rigidbody.linearVelocityY = maxFallSpeed;
                 }
@@ -218,7 +222,7 @@ public class PlayerMove : MonoBehaviour
 
                 if (IsOnGround())
                 {                    
-                    state = JumpState.OnGround;
+                    jumpState = JumpState.OnGround;
                     rigidbody.linearVelocityY = 0;
                 }
 
@@ -280,7 +284,7 @@ public class PlayerMove : MonoBehaviour
 
         for (int i = 0; i < positionHistory.Count - 1; i++)
         {
-            switch (state)
+            switch (jumpHistory[i])
             {
                 case JumpState.OnGround:
                     Gizmos.color = Color.black;
