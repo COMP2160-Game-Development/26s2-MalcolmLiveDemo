@@ -1004,7 +1004,7 @@ public partial class @Actions: IInputActionCollection2, IDisposable
             ]
         },
         {
-            ""name"": ""PlayerAttack"",
+            ""name"": ""Crosshair"",
             ""id"": ""3690871f-2738-48c0-bde7-3a355bb2af87"",
             ""actions"": [
                 {
@@ -1015,6 +1015,15 @@ public partial class @Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Aim"",
+                    ""type"": ""Value"",
+                    ""id"": ""badd68e1-1477-4cef-ac10-afcf23632916"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -1081,6 +1090,17 @@ public partial class @Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""Attack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3020b42e-39c5-427f-8a37-d6eb98b35c87"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Aim"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1172,16 +1192,17 @@ public partial class @Actions: IInputActionCollection2, IDisposable
         m_UI_ScrollWheel = m_UI.FindAction("ScrollWheel", throwIfNotFound: true);
         m_UI_TrackedDevicePosition = m_UI.FindAction("TrackedDevicePosition", throwIfNotFound: true);
         m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
-        // PlayerAttack
-        m_PlayerAttack = asset.FindActionMap("PlayerAttack", throwIfNotFound: true);
-        m_PlayerAttack_Attack = m_PlayerAttack.FindAction("Attack", throwIfNotFound: true);
+        // Crosshair
+        m_Crosshair = asset.FindActionMap("Crosshair", throwIfNotFound: true);
+        m_Crosshair_Attack = m_Crosshair.FindAction("Attack", throwIfNotFound: true);
+        m_Crosshair_Aim = m_Crosshair.FindAction("Aim", throwIfNotFound: true);
     }
 
     ~@Actions()
     {
         UnityEngine.Debug.Assert(!m_PlayerMove.enabled, "This will cause a leak and performance issues, Actions.PlayerMove.Disable() has not been called.");
         UnityEngine.Debug.Assert(!m_UI.enabled, "This will cause a leak and performance issues, Actions.UI.Disable() has not been called.");
-        UnityEngine.Debug.Assert(!m_PlayerAttack.enabled, "This will cause a leak and performance issues, Actions.PlayerAttack.Disable() has not been called.");
+        UnityEngine.Debug.Assert(!m_Crosshair.enabled, "This will cause a leak and performance issues, Actions.Crosshair.Disable() has not been called.");
     }
 
     /// <summary>
@@ -1622,29 +1643,34 @@ public partial class @Actions: IInputActionCollection2, IDisposable
     /// </summary>
     public UIActions @UI => new UIActions(this);
 
-    // PlayerAttack
-    private readonly InputActionMap m_PlayerAttack;
-    private List<IPlayerAttackActions> m_PlayerAttackActionsCallbackInterfaces = new List<IPlayerAttackActions>();
-    private readonly InputAction m_PlayerAttack_Attack;
+    // Crosshair
+    private readonly InputActionMap m_Crosshair;
+    private List<ICrosshairActions> m_CrosshairActionsCallbackInterfaces = new List<ICrosshairActions>();
+    private readonly InputAction m_Crosshair_Attack;
+    private readonly InputAction m_Crosshair_Aim;
     /// <summary>
-    /// Provides access to input actions defined in input action map "PlayerAttack".
+    /// Provides access to input actions defined in input action map "Crosshair".
     /// </summary>
-    public struct PlayerAttackActions
+    public struct CrosshairActions
     {
         private @Actions m_Wrapper;
 
         /// <summary>
         /// Construct a new instance of the input action map wrapper class.
         /// </summary>
-        public PlayerAttackActions(@Actions wrapper) { m_Wrapper = wrapper; }
+        public CrosshairActions(@Actions wrapper) { m_Wrapper = wrapper; }
         /// <summary>
-        /// Provides access to the underlying input action "PlayerAttack/Attack".
+        /// Provides access to the underlying input action "Crosshair/Attack".
         /// </summary>
-        public InputAction @Attack => m_Wrapper.m_PlayerAttack_Attack;
+        public InputAction @Attack => m_Wrapper.m_Crosshair_Attack;
+        /// <summary>
+        /// Provides access to the underlying input action "Crosshair/Aim".
+        /// </summary>
+        public InputAction @Aim => m_Wrapper.m_Crosshair_Aim;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
-        public InputActionMap Get() { return m_Wrapper.m_PlayerAttack; }
+        public InputActionMap Get() { return m_Wrapper.m_Crosshair; }
         /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
         public void Enable() { Get().Enable(); }
         /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
@@ -1652,9 +1678,9 @@ public partial class @Actions: IInputActionCollection2, IDisposable
         /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
         public bool enabled => Get().enabled;
         /// <summary>
-        /// Implicitly converts an <see ref="PlayerAttackActions" /> to an <see ref="InputActionMap" /> instance.
+        /// Implicitly converts an <see ref="CrosshairActions" /> to an <see ref="InputActionMap" /> instance.
         /// </summary>
-        public static implicit operator InputActionMap(PlayerAttackActions set) { return set.Get(); }
+        public static implicit operator InputActionMap(CrosshairActions set) { return set.Get(); }
         /// <summary>
         /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
         /// </summary>
@@ -1662,14 +1688,17 @@ public partial class @Actions: IInputActionCollection2, IDisposable
         /// <remarks>
         /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
         /// </remarks>
-        /// <seealso cref="PlayerAttackActions" />
-        public void AddCallbacks(IPlayerAttackActions instance)
+        /// <seealso cref="CrosshairActions" />
+        public void AddCallbacks(ICrosshairActions instance)
         {
-            if (instance == null || m_Wrapper.m_PlayerAttackActionsCallbackInterfaces.Contains(instance)) return;
-            m_Wrapper.m_PlayerAttackActionsCallbackInterfaces.Add(instance);
+            if (instance == null || m_Wrapper.m_CrosshairActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_CrosshairActionsCallbackInterfaces.Add(instance);
             @Attack.started += instance.OnAttack;
             @Attack.performed += instance.OnAttack;
             @Attack.canceled += instance.OnAttack;
+            @Aim.started += instance.OnAim;
+            @Aim.performed += instance.OnAim;
+            @Aim.canceled += instance.OnAim;
         }
 
         /// <summary>
@@ -1678,21 +1707,24 @@ public partial class @Actions: IInputActionCollection2, IDisposable
         /// <remarks>
         /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
         /// </remarks>
-        /// <seealso cref="PlayerAttackActions" />
-        private void UnregisterCallbacks(IPlayerAttackActions instance)
+        /// <seealso cref="CrosshairActions" />
+        private void UnregisterCallbacks(ICrosshairActions instance)
         {
             @Attack.started -= instance.OnAttack;
             @Attack.performed -= instance.OnAttack;
             @Attack.canceled -= instance.OnAttack;
+            @Aim.started -= instance.OnAim;
+            @Aim.performed -= instance.OnAim;
+            @Aim.canceled -= instance.OnAim;
         }
 
         /// <summary>
-        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="PlayerAttackActions.UnregisterCallbacks(IPlayerAttackActions)" />.
+        /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="CrosshairActions.UnregisterCallbacks(ICrosshairActions)" />.
         /// </summary>
-        /// <seealso cref="PlayerAttackActions.UnregisterCallbacks(IPlayerAttackActions)" />
-        public void RemoveCallbacks(IPlayerAttackActions instance)
+        /// <seealso cref="CrosshairActions.UnregisterCallbacks(ICrosshairActions)" />
+        public void RemoveCallbacks(ICrosshairActions instance)
         {
-            if (m_Wrapper.m_PlayerAttackActionsCallbackInterfaces.Remove(instance))
+            if (m_Wrapper.m_CrosshairActionsCallbackInterfaces.Remove(instance))
                 UnregisterCallbacks(instance);
         }
 
@@ -1702,21 +1734,21 @@ public partial class @Actions: IInputActionCollection2, IDisposable
         /// <remarks>
         /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
         /// </remarks>
-        /// <seealso cref="PlayerAttackActions.AddCallbacks(IPlayerAttackActions)" />
-        /// <seealso cref="PlayerAttackActions.RemoveCallbacks(IPlayerAttackActions)" />
-        /// <seealso cref="PlayerAttackActions.UnregisterCallbacks(IPlayerAttackActions)" />
-        public void SetCallbacks(IPlayerAttackActions instance)
+        /// <seealso cref="CrosshairActions.AddCallbacks(ICrosshairActions)" />
+        /// <seealso cref="CrosshairActions.RemoveCallbacks(ICrosshairActions)" />
+        /// <seealso cref="CrosshairActions.UnregisterCallbacks(ICrosshairActions)" />
+        public void SetCallbacks(ICrosshairActions instance)
         {
-            foreach (var item in m_Wrapper.m_PlayerAttackActionsCallbackInterfaces)
+            foreach (var item in m_Wrapper.m_CrosshairActionsCallbackInterfaces)
                 UnregisterCallbacks(item);
-            m_Wrapper.m_PlayerAttackActionsCallbackInterfaces.Clear();
+            m_Wrapper.m_CrosshairActionsCallbackInterfaces.Clear();
             AddCallbacks(instance);
         }
     }
     /// <summary>
-    /// Provides a new <see cref="PlayerAttackActions" /> instance referencing this action map.
+    /// Provides a new <see cref="CrosshairActions" /> instance referencing this action map.
     /// </summary>
-    public PlayerAttackActions @PlayerAttack => new PlayerAttackActions(this);
+    public CrosshairActions @Crosshair => new CrosshairActions(this);
     private int m_KeyboardMouseSchemeIndex = -1;
     /// <summary>
     /// Provides access to the input control scheme.
@@ -1925,11 +1957,11 @@ public partial class @Actions: IInputActionCollection2, IDisposable
         void OnTrackedDeviceOrientation(InputAction.CallbackContext context);
     }
     /// <summary>
-    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "PlayerAttack" which allows adding and removing callbacks.
+    /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Crosshair" which allows adding and removing callbacks.
     /// </summary>
-    /// <seealso cref="PlayerAttackActions.AddCallbacks(IPlayerAttackActions)" />
-    /// <seealso cref="PlayerAttackActions.RemoveCallbacks(IPlayerAttackActions)" />
-    public interface IPlayerAttackActions
+    /// <seealso cref="CrosshairActions.AddCallbacks(ICrosshairActions)" />
+    /// <seealso cref="CrosshairActions.RemoveCallbacks(ICrosshairActions)" />
+    public interface ICrosshairActions
     {
         /// <summary>
         /// Method invoked when associated input action "Attack" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
@@ -1938,5 +1970,12 @@ public partial class @Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnAttack(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Aim" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnAim(InputAction.CallbackContext context);
     }
 }

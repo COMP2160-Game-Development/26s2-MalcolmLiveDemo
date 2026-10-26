@@ -918,7 +918,7 @@
             ]
         },
         {
-            "name": "PlayerAttack",
+            "name": "Crosshair",
             "id": "3690871f-2738-48c0-bde7-3a355bb2af87",
             "actions": [
                 {
@@ -929,6 +929,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Aim",
+                    "type": "Value",
+                    "id": "badd68e1-1477-4cef-ac10-afcf23632916",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -995,6 +1004,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Attack",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3020b42e-39c5-427f-8a37-d6eb98b35c87",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Aim",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

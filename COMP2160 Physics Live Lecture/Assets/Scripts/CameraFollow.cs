@@ -12,7 +12,8 @@ public class CameraFollow : MonoBehaviour
 {
 
 #region Parameters
-    [SerializeField, Required] private Transform target;
+    [SerializeField, Required] private Transform player;
+    [SerializeField, Required] private Transform crosshair;
     [SerializeField] private float decay = 0.5f;
 #endregion 
 
@@ -41,7 +42,7 @@ public class CameraFollow : MonoBehaviour
     void LateUpdate()
     {    
         Vector3 position = transform.position;
-        position.x = target.position.x;
+        position.x = Mathf.Lerp(player.position.x, crosshair.position.x, 0.5f);
         transform.position = position;
     }
 #endregion
