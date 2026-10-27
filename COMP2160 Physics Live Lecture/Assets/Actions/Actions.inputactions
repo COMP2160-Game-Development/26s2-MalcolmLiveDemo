@@ -999,6 +999,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Crosshair",
+            "id": "48297e26-bb27-4c36-acdb-38efbf42fc94",
+            "actions": [
+                {
+                    "name": "Aim",
+                    "type": "Value",
+                    "id": "280d4840-68c1-4945-a433-1f48e2e190f2",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "7393934b-81bd-444b-acc0-d45ab56a5e5e",
+                    "path": "<Mouse>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Aim",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [
