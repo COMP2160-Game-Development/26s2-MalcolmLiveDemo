@@ -48,16 +48,25 @@ public class CameraFollow : MonoBehaviour
 #region Update
     void LateUpdate()   // update after all
     {
-        Vector3 position = transform.position;
-
+        float pastTime = Time.time - delay;
         int i = player.TimeHistory.Count - 1;
-
-        while (player.TimeHistory[i] > Time.time - delay && i > 0)
+        while (player.TimeHistory[i] > pastTime && i > 0)
         {
             i--;
         }
 
-        position.x = player.PositionHistory[i].x;
+        Vector3 position = transform.position;
+
+        if (i == player.TimeHistory.Count - 1)
+        {
+            position.x = player.PositionHistory[i].x;            
+        }
+        else
+        {
+            // smooth the time between the frames before and after 
+            float t = (pastTime - player.TimeHistory[i]) / (player.TimeHistory[i+1] - player.TimeHistory[i]);
+            position.x = Mathf.Lerp(player.PositionHistory[i].x, player.PositionHistory[i+1].x, t);                        
+        }
 
         transform.position = position;
     }
