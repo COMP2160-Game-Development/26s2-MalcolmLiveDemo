@@ -1027,6 +1027,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Gun",
+            "id": "d6352d4b-6183-44b2-a138-b17198cafcca",
+            "actions": [
+                {
+                    "name": "Fire",
+                    "type": "Button",
+                    "id": "163ca329-5d6d-40d3-89c9-0e6855f304cb",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "917272c7-9072-4e9d-b9d8-b76721e2d82e",
+                    "path": "<Mouse>/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Fire",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [
